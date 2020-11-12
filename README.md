@@ -27,6 +27,26 @@ The D1 Mini TFT Shield requires a ESP8266 D1 Mini board. It is available as an a
 
 \* = Affiliate
 
+## Setup
+
+The Shield will come assembled (other than the buttons). To use the shield, insert the D1 mini into the headers.
+
+### Please note the orientation you insert it!
+
+The notched corner of the shield should line up with the reset button of your D1 mini.
+
+The USB of the D1 mini should be on the side of the shield where the display ribbon cable is (There is a "USB" mark on the PCB of the shield). The notched corner of the shield
+
+## Software
+
+I have been using this display with the [TFT_eSPI library by bodmer](https://github.com/Bodmer/TFT_eSPI). This can be installed through the library manager.
+
+Once installed, you need to update the `User_Setup.h` file in the library folder to be one found in the config folder of this Repo.
+
+You should then be able to try the examples that are in this repo.
+
+Please note that using the buttons is a little strange as one is pulled up and the other is pulled down (internal boot pins of the ESP8266) and that D8 needs to configured after the `tft.init` call.
+
 ## Pins
 
 #### Display
@@ -67,16 +87,6 @@ The following pins are broken out to the pins at the side.
 | 3.3V     |                                                                                |
 | GND      |                                                                                |
 | 5V       |                                                                                |
-
-## Software
-
-I have been using this display with the [TFT_eSPI library by bodmer](https://github.com/Bodmer/TFT_eSPI). This can be installed through the library manager.
-
-Once installed, you need to update the `User_Setup.h` file in the library folder to be one found in the config folder of this Repo.
-
-You should then be able to try the examples that are in this repo.
-
-Please note that using the buttons is a little strange as one is pulled up and the other is pulled down (internal boot pins of the ESP8266) and that D8 needs to configured after the `tft.init` call.
 
 ## Documentation License
 

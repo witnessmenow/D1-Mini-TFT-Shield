@@ -58,9 +58,13 @@ void setup(void) {
   //D4 is the backlight
   pinMode(D4, OUTPUT);
 
+  //D4 defaults to LOW (Black Screen)
+  //You will need to turn it on using
+  //analogWrite or digitalWrite
+
   //PWM to ~half brightness
   analogWrite(D4, 500);
-  //digitalWrite(D4, HIGH); //Could use this if you just want it on full brightness
+  //digitalWrite(D4, HIGH); //full brightness
 
   tft.setTextColor(TFT_GREEN, TFT_BLACK);
   tft.setCursor (2, 2);
