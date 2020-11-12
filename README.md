@@ -2,6 +2,10 @@
 
 An open source shield for the ESP8266 D1 Mini with a ST7789 Colour TFT screen
 
+![img](https://cdn.tindiemedia.com/images/resize/9fYhuTP8_fl-3OeZqNDw4UVOPRc=/p/fit-in/774x516/filters:fill(fff)/i/528221/products/2020-11-12T16%3A35%3A22.633Z-IMG_20201112_160402.jpg)
+
+[Avilable to buy on my Tindie Store!](https://www.tindie.com/products/brianlough/d1-mini-tft-shield/) (Link may not be live yet)
+
 ## Help Support what I do!
 
 My main contribution to the open source community to date has been my Arduino libraries for the ESP32 and ESP8266, but I recently been trying to contribute more certified open source hardware projects.
@@ -32,6 +36,8 @@ The D1 Mini TFT Shield requires a ESP8266 D1 Mini board. It is available as an a
 The Shield will come assembled (other than the buttons). To use the shield, insert the D1 mini into the headers.
 
 ### Please note the orientation you insert it!
+
+![img](https://cdn.tindiemedia.com/images/resize/C6VKjNlau6LoIK_Dg67qAYbWLBc=/p/fit-in/774x516/filters:fill(fff)/i/528221/products/2020-11-12T16%3A35%3A22.633Z-IMG_20201112_160741.jpg)
 
 The notched corner of the shield should line up with the reset button of your D1 mini.
 
