@@ -1,0 +1,457 @@
+/*******************************************************************
+    WIP: Tetris game using the D1 Mini TFT ST7789 Shield
+    and a Wii Nunchuck.
+
+    This is based on from code from onelonecoder.com (@javidx9)
+
+    Original Video (Well worth checking out): https://youtu.be/8OK8_tHeCIA
+    Original Code: https://github.com/OneLoneCoder/videos/blob/master/OneLoneCoder_Tetris.cpp
+
+    Parts Used:
+    D1 Mini ESP8266 * - http://s.click.aliexpress.com/e/uzFUnIe
+
+ *  * = Affilate
+
+    If you find what I do useful and would like to support me,
+    please consider becoming a sponsor on Github
+    https://github.com/sponsors/witnessmenow/
+
+
+    Written by Brian Lough
+    YouTube: https://www.youtube.com/brianlough
+    Tindie: https://www.tindie.com/stores/brianlough/
+    Twitter: https://twitter.com/witnessmenow
+ *******************************************************************/
+
+
+// ----------------------------
+// Standard Libraries
+// ----------------------------
+
+#include <Wire.h>
+#include <SPI.h>
+
+// ----------------------------
+// Additional Libraries - each one of these will need to be installed.
+// ----------------------------
+
+#include <NintendoExtensionCtrl.h>
+// This library is for interfacing with the Nunchuck
+
+// Can be installed from the library manager
+// https://github.com/dmadison/NintendoExtensionCtrl
+
+#include <TFT_eSPI.h>
+// Graphics and font library for ST7789 driver chip
+
+// Can be installed from the library manager (Search for "eSPI")
+// https://github.com/Bodmer/TFT_eSPI
+
+//--------------------------------
+//Game Config Options:
+//--------------------------------
+
+#define DISPLAY_WIDTH 240
+#define DISPLAY_HEIGHT 240
+
+#define LEFT_OFFSET 60
+#define TOP_OFFSET 40
+
+#define WORLD_TO_PIXEL 10 //each dot on the game world will be reperesented by these many pixels.
+
+#define DELAY_BETWEEN_FRAMES 50
+#define DELAY_ON_LINE_CLEAR 100
+
+#define NUM_PIECES_TIL_SPEED_CHANGE 20
+
+Nunchuk nchuk;
+TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
+
+uint16_t myRED = TFT_RED;
+uint16_t myGREEN = TFT_GREEN;
+uint16_t myBLUE = TFT_BLUE;
+uint16_t myWHITE = TFT_WHITE;
+uint16_t myYELLOW = TFT_YELLOW;
+uint16_t myCYAN = TFT_CYAN;
+uint16_t myMAGENTA = TFT_MAGENTA;
+uint16_t myBLACK = TFT_BLACK;
+
+// [0] is empty space
+// [1-7] are tetromino colours
+// [8] is the colour a completed line changes to before dissapearing
+// [9] is the walls of the board.
+uint16_t gameColours[10] = {myBLACK, myRED, myGREEN, myBLUE, myWHITE, myYELLOW, myCYAN, myMAGENTA, myRED, myGREEN};
+
+char tetromino[7][17];
+int nFieldWidth = 12;
+int nFieldHeight = 18;
+char *pField = nullptr;
+
+int Rotate(int px, int py, int r)
+{
+  int pi = 0;
+  switch (r % 4)
+  {
+    case 0: // 0 degrees      // 0  1  2  3
+      pi = py * 4 + px;     // 4  5  6  7
+      break;            // 8  9 10 11
+    //12 13 14 15
+
+    case 1: // 90 degrees     //12  8  4  0
+      pi = 12 + py - (px * 4);  //13  9  5  1
+      break;                      //14 10  6  2
+    //15 11  7  3
+
+    case 2: // 180 degrees      //15 14 13 12
+      pi = 15 - (py * 4) - px;  //11 10  9  8
+      break;                    // 7  6  5  4
+    // 3  2  1  0
+
+    case 3: // 270 degrees      // 3  7 11 15
+      pi = 3 - py + (px * 4);   // 2  6 10 14
+      break;                    // 1  5  9 13
+  }   // 0  4  8 12
+
+  return pi;
+}
+
+bool DoesPieceFit(int nTetromino, int nRotation, int nPosX, int nPosY)
+{
+  // All Field cells >0 are occupied
+  for (int px = 0; px < 4; px++)
+    for (int py = 0; py < 4; py++)
+    {
+      // Get index into piece
+      int pi = Rotate(px, py, nRotation);
+
+      // Get index into field
+      int fi = (nPosY + py) * nFieldWidth + (nPosX + px);
+
+      // Check that test is in bounds. Note out of bounds does
+      // not necessarily mean a fail, as the long vertical piece
+      // can have cells that lie outside the boundary, so we'll
+      // just ignore them
+      if (nPosX + px >= 0 && nPosX + px < nFieldWidth)
+      {
+        if (nPosY + py >= 0 && nPosY + py < nFieldHeight)
+        {
+          // In Bounds so do collision check
+          if (tetromino[nTetromino][pi] != L'.' && pField[fi] != 0)
+            return false; // fail on first hit
+        }
+      }
+    }
+
+  return true;
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  tft.init();
+  tft.setRotation(3); // Needs to be rotated 3 to look correct on the shield
+
+  tft.fillScreen(TFT_BLACK);
+
+  nchuk.begin();
+  while (!nchuk.connect()) {
+    Serial.println("Nunchuk on bus #1 not detected!");
+    tft.setTextColor(TFT_BLUE, TFT_BLACK);
+    tft.drawCentreString("No", 120, 10, 4);
+    tft.setTextColor(TFT_BLUE, TFT_BLACK);
+    tft.drawCentreString("Nunchuck", 120, 50, 4);
+    tft.setTextColor(TFT_BLUE, TFT_BLACK);
+    tft.drawCentreString("detected!", 120, 90, 4);
+    delay(1000);
+  }
+
+  strcpy(tetromino[0], "..X...X...X...X."); // Tetronimos 4x4
+  strcpy(tetromino[1], "..X..XX...X.....");
+  strcpy(tetromino[2], ".....XX..XX.....");
+  strcpy(tetromino[3], "..X..XX..X......");
+  strcpy(tetromino[4], ".X...XX...X.....");
+  strcpy(tetromino[5], ".X...X...XX.....");
+  strcpy(tetromino[6], "..X...X..XX.....");
+
+  // inits field
+  restartGame();
+
+  tft.fillScreen(TFT_BLACK);
+}
+
+bool bGameOver = false;
+
+bool moveLeft;
+bool moveRight;
+bool dropDown;
+bool rotatePiece;
+bool cButtonPressed;
+
+bool lastCButtonState;
+
+bool isPaused;
+
+int moveThreshold = 30;
+
+int nCurrentPiece = 2;
+int nCurrentRotation = 0;
+int nCurrentX = (nFieldWidth / 2) - 2;
+int nCurrentY = 0;
+
+int nPreviousX = -1;
+int nPreviousY = -1;
+
+int nSpeed = 20;
+int nSpeedCount = 0;
+bool bForceDown = false;
+bool bRotateHold = true;
+
+int nPieceCount = 0;
+int nScore = 0;
+
+int completedLinesIndex[4];
+int numCompletedLines;
+
+bool redrawWorld = false;
+
+void getNewPiece()
+{
+  // Pick New Piece
+  nCurrentX = (nFieldWidth / 2) - 2;
+  nCurrentY = 0;
+  nPreviousX = -1;
+  nPreviousY = -1;
+  nCurrentRotation = 0;
+  nCurrentPiece = random(7);
+}
+
+void gameTiming() {
+  delay(DELAY_BETWEEN_FRAMES);
+  nSpeedCount++;
+  bForceDown = (nSpeedCount == nSpeed);
+}
+
+void clearLines() {
+  if (numCompletedLines > 0)
+  {
+    delay(DELAY_ON_LINE_CLEAR);
+    for (int i = 0; i < numCompletedLines; i ++ )
+    {
+      for (int px = 1; px < nFieldWidth - 1; px++)
+      {
+        for (int py = completedLinesIndex[i]; py > 0; py--)
+          pField[py * nFieldWidth + px] = pField[(py - 1) * nFieldWidth + px];
+        pField[px] = 0;
+      }
+    }
+    numCompletedLines = 0;
+    redrawWorld = true;
+  }
+}
+
+void gameLogic() {
+
+  //Handle updating lines cleared last tick
+  clearLines();
+
+  nPreviousX = nCurrentX;
+  nPreviousY = nCurrentY;
+
+  nCurrentX += (moveRight && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX + 1, nCurrentY)) ? 1 : 0;
+  nCurrentX -= (moveLeft && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX - 1, nCurrentY)) ? 1 : 0;
+  nCurrentY += (dropDown && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX, nCurrentY + 1)) ? 1 : 0;
+
+  if (rotatePiece)
+  {
+    nCurrentRotation += (bRotateHold && DoesPieceFit(nCurrentPiece, nCurrentRotation + 1, nCurrentX, nCurrentY)) ? 1 : 0;
+    bRotateHold = false;
+  }
+  else
+    bRotateHold = true;
+
+  // Force the piece down the playfield if it's time
+  if (bForceDown)
+  {
+    // Update difficulty every 50 pieces
+    nSpeedCount = 0;
+    nPieceCount++;
+    if (nPieceCount % NUM_PIECES_TIL_SPEED_CHANGE == 0)
+      if (nSpeed >= 10) nSpeed--;
+
+    // Test if piece can be moved down
+    if (DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX, nCurrentY + 1))
+      nCurrentY++; // It can, so do it!
+    else
+    {
+      // It can't! Lock the piece in place
+      for (int px = 0; px < 4; px++)
+        for (int py = 0; py < 4; py++)
+          if (tetromino[nCurrentPiece][Rotate(px, py, nCurrentRotation)] != '.')
+            pField[(nCurrentY + py) * nFieldWidth + (nCurrentX + px)] = nCurrentPiece + 1;
+
+      // Check for lines
+      for (int py = 0; py < 4; py++)
+        if (nCurrentY + py < nFieldHeight - 1)
+        {
+          bool bLine = true;
+          for (int px = 1; px < nFieldWidth - 1; px++)
+            bLine &= (pField[(nCurrentY + py) * nFieldWidth + px]) != 0;
+
+          if (bLine)
+          {
+            // Remove Line, set to =
+            for (int px = 1; px < nFieldWidth - 1; px++)
+              pField[(nCurrentY + py) * nFieldWidth + px] = 8;
+            //vLines.push_back(nCurrentY + py);
+            completedLinesIndex[numCompletedLines] = nCurrentY + py;
+            numCompletedLines++;
+
+          }
+        }
+
+      nScore += 25;
+      if (numCompletedLines > 0) nScore += (1 << numCompletedLines) * 100;
+
+      // Pick New Piece
+      getNewPiece();
+
+      // If piece does not fit straight away, game over!
+      bGameOver = !DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX, nCurrentY);
+    }
+  }
+}
+
+void gameInput() {
+
+  boolean success = nchuk.update();  // Get new data from the controller
+
+  if (!success) {  // Ruh roh
+    Serial.println("Controller disconnected!");
+    delay(1000);
+  }
+  else {
+
+    rotatePiece = nchuk.buttonZ();
+
+    lastCButtonState = cButtonPressed;
+    cButtonPressed = nchuk.buttonC();
+
+    if (cButtonPressed && !lastCButtonState)
+    {
+      isPaused = !isPaused;
+    }
+
+    // Read a joystick axis (0-255, X and Y)
+    int joyY = nchuk.joyY();
+    int joyX = nchuk.joyX();
+
+    moveRight = (joyX > 127 + moveThreshold);
+    moveLeft = (joyX < 127 - moveThreshold);
+    dropDown = (joyY < 127 - moveThreshold);
+
+  }
+
+}
+
+uint16_t getFieldColour(int index, bool isDeathScreen) {
+  if (isDeathScreen && pField[index] != 0) {
+    return myRED;
+  } else {
+    return gameColours[pField[index]];
+  }
+}
+
+void displayLogic(bool isDeathScreen = false) {
+
+  int realX;
+  int realY;
+
+  if (redrawWorld) {
+    tft.fillScreen(TFT_BLACK);
+    redrawWorld = false;
+  } else if (nPreviousX >= 0) {
+    realX = (nPreviousX * WORLD_TO_PIXEL) + LEFT_OFFSET;
+    realY = (nPreviousY * WORLD_TO_PIXEL) + TOP_OFFSET;
+    tft.fillRect(realX, realY, WORLD_TO_PIXEL * 4, WORLD_TO_PIXEL * 4, TFT_BLACK);
+  }
+
+  // Draw Field
+  for (int x = 0; x < nFieldWidth; x++)
+    for (int y = 0; y < nFieldHeight; y++)
+    {
+      realX = (x * WORLD_TO_PIXEL) + LEFT_OFFSET;
+      realY = (y * WORLD_TO_PIXEL) + TOP_OFFSET;
+      uint16_t fieldColour = getFieldColour((y * nFieldWidth + x), isDeathScreen);
+      if (fieldColour != myBLACK) {
+        if (WORLD_TO_PIXEL > 1) {
+          tft.drawRect(realX, realY, WORLD_TO_PIXEL, WORLD_TO_PIXEL, fieldColour);
+        } else {
+          tft.drawPixel(realX, realY, fieldColour);
+        }
+      }
+    }
+
+  // Draw Current Piece
+  for (int px = 0; px < 4; px++)
+    for (int py = 0; py < 4; py++)
+      if (tetromino[nCurrentPiece][Rotate(px, py, nCurrentRotation)] != '.')
+      {
+        realX = ((nCurrentX + px) * WORLD_TO_PIXEL) + LEFT_OFFSET;
+        realY = ((nCurrentY + py) * WORLD_TO_PIXEL) + TOP_OFFSET;
+        if (WORLD_TO_PIXEL > 1) {
+          tft.drawRect(realX, realY, WORLD_TO_PIXEL, WORLD_TO_PIXEL, gameColours[nCurrentPiece + 1]);
+        } else {
+          tft.drawPixel(realX, realY, gameColours[nCurrentPiece + 1]);
+        }
+      }
+
+  tft.setTextColor(TFT_BLUE, TFT_BLACK);
+
+  if (isPaused) {
+    tft.drawCentreString("Paws", 120, 10, 4);
+  } else {
+    // Display the Score
+
+    tft.drawCentreString(String(nScore), 120, 10, 4);
+  }
+
+}
+
+void restartGame() {
+
+  bGameOver = false;
+  pField = new char[nFieldWidth * nFieldHeight]; // Create play field buffer
+  for (int x = 0; x < nFieldWidth; x++) // Board Boundary
+    for (int y = 0; y < nFieldHeight; y++)
+      pField[y * nFieldWidth + x] = (x == 0 || x == nFieldWidth - 1 || y == nFieldHeight - 1) ? 9 : 0;
+
+  // Pick New Piece
+  getNewPiece();
+
+  nScore = 0;
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if (!bGameOver)
+  {
+    gameInput();
+    if (!isPaused)
+    {
+      gameTiming();
+      gameLogic();
+    } else {
+      delay(DELAY_BETWEEN_FRAMES); //stopping pulsing of LEDS
+    }
+    displayLogic();
+  } else {
+    delay(DELAY_BETWEEN_FRAMES);
+    gameInput();
+    displayLogic(true);
+    if (cButtonPressed)
+    {
+      restartGame();
+    }
+  }
+}
