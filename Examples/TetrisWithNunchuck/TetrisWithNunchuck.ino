@@ -213,6 +213,7 @@ int completedLinesIndex[4];
 int numCompletedLines;
 
 bool redrawWorld = false;
+bool somethingMoved = true;
 
 void getNewPiece()
 {
@@ -223,6 +224,8 @@ void getNewPiece()
   nPreviousY = -1;
   nCurrentRotation = 0;
   nCurrentPiece = random(7);
+
+  somethingMoved = true;
 }
 
 void gameTiming() {
@@ -251,19 +254,31 @@ void clearLines() {
 
 void gameLogic() {
 
+  somethingMoved = false;
+  
   //Handle updating lines cleared last tick
   clearLines();
 
   nPreviousX = nCurrentX;
   nPreviousY = nCurrentY;
 
-  nCurrentX += (moveRight && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX + 1, nCurrentY)) ? 1 : 0;
-  nCurrentX -= (moveLeft && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX - 1, nCurrentY)) ? 1 : 0;
-  nCurrentY += (dropDown && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX, nCurrentY + 1)) ? 1 : 0;
+  if(moveRight && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX + 1, nCurrentY)) {
+    somethingMoved = true;
+    nCurrentX += 1;
+  }
+  if(moveLeft && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX - 1, nCurrentY)) {
+    somethingMoved = true;
+    nCurrentX -= 1;
+  }
+  if(dropDown && DoesPieceFit(nCurrentPiece, nCurrentRotation, nCurrentX, nCurrentY + 1)) {
+    somethingMoved = true;
+    nCurrentY += 1;
+  }
 
   if (rotatePiece)
   {
     nCurrentRotation += (bRotateHold && DoesPieceFit(nCurrentPiece, nCurrentRotation + 1, nCurrentX, nCurrentY)) ? 1 : 0;
+    somethingMoved = true;
     bRotateHold = false;
   }
   else
@@ -272,6 +287,7 @@ void gameLogic() {
   // Force the piece down the playfield if it's time
   if (bForceDown)
   {
+    somethingMoved = true;
     // Update difficulty every 50 pieces
     nSpeedCount = 0;
     nPieceCount++;
@@ -366,14 +382,15 @@ void displayLogic(bool isDeathScreen = false) {
   int realX;
   int realY;
 
-  if (redrawWorld) {
-    tft.fillScreen(TFT_BLACK);
-    redrawWorld = false;
-  } else if (nPreviousX >= 0) {
-    realX = (nPreviousX * WORLD_TO_PIXEL) + LEFT_OFFSET;
-    realY = (nPreviousY * WORLD_TO_PIXEL) + TOP_OFFSET;
-    tft.fillRect(realX, realY, WORLD_TO_PIXEL * 4, WORLD_TO_PIXEL * 4, TFT_BLACK);
-  }
+  tft.fillScreen(TFT_BLACK);
+//  if (redrawWorld) {
+//    tft.fillScreen(TFT_BLACK);
+//    redrawWorld = false;
+//  } else if (nPreviousX >= 0) {
+//    realX = (nPreviousX * WORLD_TO_PIXEL) + LEFT_OFFSET;
+//    realY = (nPreviousY * WORLD_TO_PIXEL) + TOP_OFFSET;
+//    tft.fillRect(realX, realY, WORLD_TO_PIXEL * 4, WORLD_TO_PIXEL * 4, TFT_BLACK);
+//  }
 
   // Draw Field
   for (int x = 0; x < nFieldWidth; x++)
@@ -444,7 +461,9 @@ void loop() {
     } else {
       delay(DELAY_BETWEEN_FRAMES); //stopping pulsing of LEDS
     }
-    displayLogic();
+    if(somethingMoved){
+      displayLogic();
+    }   
   } else {
     delay(DELAY_BETWEEN_FRAMES);
     gameInput();
