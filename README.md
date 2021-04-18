@@ -2,7 +2,7 @@
 
 An open source shield for the ESP8266 D1 Mini with a ST7789 Colour TFT screen
 
-![img](https://cdn.tindiemedia.com/images/resize/9fYhuTP8_fl-3OeZqNDw4UVOPRc=/p/fit-in/774x516/filters:fill(fff)/i/528221/products/2020-11-12T16%3A35%3A22.633Z-IMG_20201112_160402.jpg)
+![img](<https://cdn.tindiemedia.com/images/resize/9fYhuTP8_fl-3OeZqNDw4UVOPRc=/p/fit-in/774x516/filters:fill(fff)/i/528221/products/2020-11-12T16%3A35%3A22.633Z-IMG_20201112_160402.jpg>)
 
 [Avilable to buy on my Tindie Store!](https://www.tindie.com/products/brianlough/d1-mini-tft-shield/) (Link may not be live yet)
 
@@ -27,7 +27,7 @@ The D1 Mini TFT Shield requires a ESP8266 D1 Mini board. It is available as an a
 
 - [Aliexpress\*](http://s.click.aliexpress.com/e/uzFUnIe)
 
-**NOTE:** This is **NOT** compatible with the ESP32 board that is shaped like a D1 Mini! It will likely damage your ESP32. (The pads on the shield are duplicated on each side).
+**NOTE:** This is **NOT** compatible with the ESP32 board that is shaped like a D1 Mini! It will likely damage your ESP32. (The pads on the shield are duplicated on each side). It is possible to use stacking headers to connect it though.
 
 \* = Affiliate
 
@@ -37,7 +37,7 @@ The Shield will come assembled (other than the buttons). To use the shield, inse
 
 ### Please note the orientation you insert it!
 
-![img](https://cdn.tindiemedia.com/images/resize/C6VKjNlau6LoIK_Dg67qAYbWLBc=/p/fit-in/774x516/filters:fill(fff)/i/528221/products/2020-11-12T16%3A35%3A22.633Z-IMG_20201112_160741.jpg)
+![img](<https://cdn.tindiemedia.com/images/resize/C6VKjNlau6LoIK_Dg67qAYbWLBc=/p/fit-in/774x516/filters:fill(fff)/i/528221/products/2020-11-12T16%3A35%3A22.633Z-IMG_20201112_160741.jpg>)
 
 The notched corner of the shield should line up with the reset button of your D1 mini.
 
