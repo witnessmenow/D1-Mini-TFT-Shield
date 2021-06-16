@@ -4,6 +4,13 @@
     Checks every 5 seconds if one of your channels being watched
     is live. 5 seconds later it will check the next one.
 
+    NOTE 1: This is almost certainly against YouTube ToS, so use at your own risk
+    (Although there is nothing in the request that identifies you, they may limit or ban
+    your IP address)
+
+    NOTE 2: This could potentially use a decent amount of data as it makes
+    lots of requests. (every 5 seconds, all day, that's + 17k requests)
+
     Parts:
     ----------
     D1 Mini ESP8266 * - http://s.click.aliexpress.com/e/uzFUnIe
@@ -68,20 +75,27 @@ struct YTChannelDetails
 char ssid[] = "SSID";         // your network SSID (name)
 char password[] = "password"; // your network password
 
-#define NUM_CHANNELS 7
+#define NUM_CHANNELS 8
 
 // {"channel_ID", "name to appear", "current status"}
+//
 // Easiest way to get the channel ID is to click on a video,
 // then click on their channel name from the video page,
 // channel ID will be in the URL then.
+//
+// 16 (maybe 17) characters is the max that will fit for "name to appear"
+//
+// Current status should start as false, it will get updated if they are live.
 
-YTChannelDetails channels[NUM_CHANNELS] = {{"UCUW49KGPezggFi0PGyDvcvg", "Zack Freedman", false},
-  {"UCp_5PO66faM4dBFbFFBdPSQ", "Bitluni", false},
-  {"UC8rQKO2XhPnvhnyV1eALa6g", "Bitluni's Trash", false},
-  {"UCu94OHbBYVUXLYPh4NBu10w", "Unexpected Maker", false},
-  {"UCezJOfu7OtqGzd5xrP3q6WA", "Brian Lough", false},
-  {"UCQmACVkilzq39wH9WW3jmyA", "Lough & Load", false},
-  {"UCv7UOhZ2XuPwm9SN5oJsCjA", "Intermit.Tech", false}
+YTChannelDetails channels[NUM_CHANNELS] = {
+  {"UCUW49KGPezggFi0PGyDvcvg", "Zack Freedman", false}, // https://www.youtube.com/channel/UCUW49KGPezggFi0PGyDvcvg
+  {"UCp_5PO66faM4dBFbFFBdPSQ", "Bitluni", false}, // https://www.youtube.com/channel/UCp_5PO66faM4dBFbFFBdPSQ
+  {"UC8rQKO2XhPnvhnyV1eALa6g", "Bitluni's Trash", false}, // https://www.youtube.com/channel/UC8rQKO2XhPnvhnyV1eALa6g
+  {"UCu94OHbBYVUXLYPh4NBu10w", "Unexpected Maker", false}, // https://www.youtube.com/channel/UCu94OHbBYVUXLYPh4NBu10w
+  {"UCezJOfu7OtqGzd5xrP3q6WA", "Brian Lough", false}, // https://www.youtube.com/channel/UCezJOfu7OtqGzd5xrP3q6WA
+  {"UCQmACVkilzq39wH9WW3jmyA", "Lough & Load", false}, // https://www.youtube.com/channel/UCQmACVkilzq39wH9WW3jmyA
+  {"UCv7UOhZ2XuPwm9SN5oJsCjA", "Intermit.Tech", false}, // https://www.youtube.com/channel/UCv7UOhZ2XuPwm9SN5oJsCjA
+  {"UCllpBTH26_dAl5tYl7vA1TQ", "Defpom", false} // https://www.youtube.com/channel/UCllpBTH26_dAl5tYl7vA1TQ
 };
 
 
