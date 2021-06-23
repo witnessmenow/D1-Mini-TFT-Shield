@@ -75,7 +75,9 @@ struct YTChannelDetails
 char ssid[] = "SSID";         // your network SSID (name)
 char password[] = "password"; // your network password
 
-#define NUM_CHANNELS 8
+
+// Update this to match the number of channels you are following.
+#define NUM_CHANNELS 9
 
 // {"channel_ID", "name to appear", "current status"}
 //
@@ -95,7 +97,8 @@ YTChannelDetails channels[NUM_CHANNELS] = {
   {"UCezJOfu7OtqGzd5xrP3q6WA", "Brian Lough", false}, // https://www.youtube.com/channel/UCezJOfu7OtqGzd5xrP3q6WA
   {"UCQmACVkilzq39wH9WW3jmyA", "Lough & Load", false}, // https://www.youtube.com/channel/UCQmACVkilzq39wH9WW3jmyA
   {"UCv7UOhZ2XuPwm9SN5oJsCjA", "Intermit.Tech", false}, // https://www.youtube.com/channel/UCv7UOhZ2XuPwm9SN5oJsCjA
-  {"UCllpBTH26_dAl5tYl7vA1TQ", "Defpom", false} // https://www.youtube.com/channel/UCllpBTH26_dAl5tYl7vA1TQ
+  {"UCllpBTH26_dAl5tYl7vA1TQ", "Defpom", false}, // https://www.youtube.com/channel/UCllpBTH26_dAl5tYl7vA1TQ
+  {"UC3yasGCIt1rmKnZ8PukocSw", "Simple Elect", false} // Simple Electronics - https://www.youtube.com/channel/UC3yasGCIt1rmKnZ8PukocSw
 };
 
 
@@ -162,14 +165,12 @@ void loop() {
 
   if (millis() > requestDueTime)
   {
-
     if (ytVideo.scrapeIsChannelLive(channels[channelIndex].id)) {
       if (!channels[channelIndex].live)
       {
         channels[channelIndex].live = true;
         screenChange = true;
       }
-
       Serial.print(channels[channelIndex].name);
       Serial.println(" is live");
       requestDueTime = millis() + delayBetweenRequests;
