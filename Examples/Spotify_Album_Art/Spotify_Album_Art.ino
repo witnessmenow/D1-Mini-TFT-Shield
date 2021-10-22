@@ -89,7 +89,7 @@ char clientSecret[] = "56t4373258u3405u43u543"; // Your client Secret of your sp
 String lastAlbumArtUrl;
 
 WiFiClientSecure client;
-ArduinoSpotify spotify(client, clientId, clientSecret, SPOTIFY_REFRESH_TOKEN);
+SpotifyArduino spotify(client, clientId, clientSecret, SPOTIFY_REFRESH_TOKEN);
 
 // You might want to make this much smaller, so it will update responsively
 
