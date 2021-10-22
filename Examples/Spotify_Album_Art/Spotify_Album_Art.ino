@@ -48,7 +48,7 @@
 // Can be installed from the library manager (Search for "eSPI")
 // https://github.com/Bodmer/TFT_eSPI
 
-#include <ArduinoSpotify.h>
+#include <SpotifyArduino.h>
 // Library for connecting to the Spotify API
 
 // Install from Github
@@ -235,9 +235,9 @@ int displayImage(char *albumArtUrl) {
 //    Serial.println();
 //
 //    Serial.print("Artist: ");
-//    Serial.println(currentlyPlaying.firstArtistName);
+//    Serial.println(SpotifyArtist.artistName);
 //    Serial.print("Artist URI: ");
-//    Serial.println(currentlyPlaying.firstArtistUri);
+//    Serial.println(SpotifyArtist.artistUri);
 //    Serial.println();
 //
 //    Serial.print("Album: ");
@@ -278,9 +278,9 @@ void displayCurrentlyPlayingOnScreen(CurrentlyPlaying currentlyPlaying)
   //    Serial.println();
   //
   //    Serial.print("Artist: ");
-  //    Serial.println(currentlyPlaying.firstArtistName);
+  //    Serial.println(SpotifyArtist.artistName);
   //    Serial.print("Artist URI: ");
-  //    Serial.println(currentlyPlaying.firstArtistUri);
+  //    Serial.println(SpotifyArtist.artistUri);
   //    Serial.println();
   //
   //    Serial.print("Album: ");
@@ -315,7 +315,7 @@ void loop() {
     Serial.println("getting currently playing song:");
     // Market can be excluded if you want e.g. spotify.getCurrentlyPlaying()
     CurrentlyPlaying currentlyPlaying = spotify.getCurrentlyPlaying(SPOTIFY_MARKET);
-    if (!currentlyPlaying.error)
+    if (currentlyPlaying.isPlaying)    //if (!currentlyPlaying.error)  // This causes the compiler error: 'struct CurrentlyPlaying' has no member named 'error'
     {
       //printCurrentlyPlayingToSerial(currentlyPlaying);
       displayCurrentlyPlayingOnScreen(currentlyPlaying);
