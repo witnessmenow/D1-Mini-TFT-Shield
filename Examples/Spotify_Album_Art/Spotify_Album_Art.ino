@@ -48,7 +48,7 @@
 // Can be installed from the library manager (Search for "eSPI")
 // https://github.com/Bodmer/TFT_eSPI
 
-#include <ArduinoSpotify.h>
+#include <SpotifyArduino.h>
 // Library for connecting to the Spotify API
 
 // Install from Github
@@ -89,7 +89,7 @@ char clientSecret[] = "56t4373258u3405u43u543"; // Your client Secret of your sp
 String lastAlbumArtUrl;
 
 WiFiClientSecure client;
-ArduinoSpotify spotify(client, clientId, clientSecret, SPOTIFY_REFRESH_TOKEN);
+SpotifyArduino spotify(client, clientId, clientSecret, SPOTIFY_REFRESH_TOKEN);
 
 // You might want to make this much smaller, so it will update responsively
 
@@ -235,9 +235,9 @@ int displayImage(char *albumArtUrl) {
 //    Serial.println();
 //
 //    Serial.print("Artist: ");
-//    Serial.println(currentlyPlaying.firstArtistName);
+//    Serial.println(SpotifyArtist.artistName);
 //    Serial.print("Artist URI: ");
-//    Serial.println(currentlyPlaying.firstArtistUri);
+//    Serial.println(SpotifyArtist.artistUri);
 //    Serial.println();
 //
 //    Serial.print("Album: ");
@@ -270,7 +270,7 @@ void displayCurrentlyPlayingOnScreen(CurrentlyPlaying currentlyPlaying)
   tft.fillRect(0, 160, 240, 80, TFT_BLACK);
   tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   tft.drawCentreString(currentlyPlaying.trackName, 120, 170, 2);
-  tft.drawCentreString(currentlyPlaying.firstArtistName, 120, 188, 2);
+  tft.drawCentreString(currentlyPlaying.artists[0].artistName, 120, 188, 2);  // was: currentlyPlaying.firstArtistName
   tft.drawCentreString(currentlyPlaying.albumName, 120, 206, 2);
   //    Serial.println(currentlyPlaying.trackName);
   //    Serial.print("Track URI: ");
@@ -278,9 +278,9 @@ void displayCurrentlyPlayingOnScreen(CurrentlyPlaying currentlyPlaying)
   //    Serial.println();
   //
   //    Serial.print("Artist: ");
-  //    Serial.println(currentlyPlaying.firstArtistName);
+  //    Serial.println(SpotifyArtist.artistName);
   //    Serial.print("Artist URI: ");
-  //    Serial.println(currentlyPlaying.firstArtistUri);
+  //    Serial.println(SpotifyArtist.artistUri);
   //    Serial.println();
   //
   //    Serial.print("Album: ");
@@ -315,7 +315,7 @@ void loop() {
     Serial.println("getting currently playing song:");
     // Market can be excluded if you want e.g. spotify.getCurrentlyPlaying()
     CurrentlyPlaying currentlyPlaying = spotify.getCurrentlyPlaying(SPOTIFY_MARKET);
-    if (!currentlyPlaying.error)
+    if (currentlyPlaying.isPlaying)    //if (!currentlyPlaying.error)  // This causes the compiler error: 'struct CurrentlyPlaying' has no member named 'error'
     {
       //printCurrentlyPlayingToSerial(currentlyPlaying);
       displayCurrentlyPlayingOnScreen(currentlyPlaying);
