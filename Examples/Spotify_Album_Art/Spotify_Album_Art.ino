@@ -270,7 +270,7 @@ void displayCurrentlyPlayingOnScreen(CurrentlyPlaying currentlyPlaying)
   tft.fillRect(0, 160, 240, 80, TFT_BLACK);
   tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   tft.drawCentreString(currentlyPlaying.trackName, 120, 170, 2);
-  tft.drawCentreString(currentlyPlaying.firstArtistName, 120, 188, 2);
+  tft.drawCentreString(currentlyPlaying.artists[0].artistName, 120, 188, 2);  // was: currentlyPlaying.firstArtistName
   tft.drawCentreString(currentlyPlaying.albumName, 120, 206, 2);
   //    Serial.println(currentlyPlaying.trackName);
   //    Serial.print("Track URI: ");
